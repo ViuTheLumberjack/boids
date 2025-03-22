@@ -5,18 +5,19 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
-#include <vector>
+#include <array>
 
 #include "Boid.h"
+#include "Options.h"
 
 class Simulator {
-    std::vector<Boid> boids = std::vector<Boid>();
+    std::array<Boid, BoidOptions::BoidNum> boids = std::array<Boid, BoidOptions::BoidNum>();
 
-    public:
+public:
     Simulator();
-
-    [[nodiscard]] std::vector<Boid> getState() const;
     void NextState();
+
+    const std::array<Boid, BoidOptions::BoidNum>& getState() const;
 
     ~Simulator() = default;
 };

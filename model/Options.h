@@ -6,21 +6,17 @@
 #define OPTIONS_H
 
 struct BoidOptions {
-    static int constexpr BoidNum = 50;
-    static double constexpr TurnFactor = 0.2;
-    static double constexpr VisualRange = 100;
+    static int constexpr BoidNum = 1000;
 
-    static double constexpr ProtectedRange = 10;
+    static double constexpr TurnFactor = 0.5;
+    static double constexpr VisualRange = 100;
+    static double constexpr ProtectedRange = 15;
     static double constexpr AvoidFactor = 0.05;
     static double constexpr CenteringFactor = 0.0005;
     static double constexpr MatchingFactor = 0.05;
 
-    static double constexpr MaxSpeed = 75;
-    static double constexpr MinSpeed = 25;
-
-    static double constexpr MaxBias = 0.01;
-    static double constexpr BiasIncrement = 0.00004;
-    static double constexpr BiasVal = 0.001;
+    static double constexpr MaxSpeed = 100;
+    static double constexpr MinSpeed = 40;
 };
 
 struct ScreenOptions {

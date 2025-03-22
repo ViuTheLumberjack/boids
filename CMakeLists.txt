@@ -16,16 +16,20 @@ FetchContent_Declare(SFML
         SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-# Add the SEQUENTIAL define only if USE_SEQUENTIAL is ON
-if(USE_PARALLEL)
-    add_compile_definitions(-DPARALLEL)
-endif()
-
 add_executable(Boids main.cpp
         model/Boid.cpp
         model/Boid.h
         model/Options.h
         model/Simulator.cpp
         model/Simulator.h
-        )
+        model/WindowManager.cpp
+        model/WindowManager.h
+)
+
+# Add the SEQUENTIAL define only if USE_SEQUENTIAL is ON
+if(USE_PARALLEL)
+    find_package(OpenMP REQUIRED)
+    target_link_libraries(Boids PRIVATE OpenMP::OpenMP_CXX SFML::Graphics)
+endif()
+
 target_link_libraries(Boids PRIVATE SFML::Graphics)

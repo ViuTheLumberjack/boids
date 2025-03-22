@@ -3,16 +3,9 @@
 //
 
 #include "Boid.h"
-
-#include "SFML/Window/WindowEnums.hpp"
-
-#if not PARALLEL
+#include "Options.h"
 
 void Boid::move() {
     state.xPosition = state.xPosition + state.xVelocity / ScreenOptions::FrameRate;
     state.yPosition = state.yPosition + state.yVelocity / ScreenOptions::FrameRate;
 }
-
-#else
-
-#endif
