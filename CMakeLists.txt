@@ -16,20 +16,32 @@ FetchContent_Declare(SFML
         SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(Boids main.cpp
-        model/Boid.cpp
-        model/Boid.h
-        model/Options.h
-        model/Simulator.cpp
-        model/Simulator.h
-        model/WindowManager.cpp
-        model/WindowManager.h
+add_library(BoidLib
+        Options.h
+        modelAOS/Boid.cpp
+        modelAOS/Boid.h
+        modelAOS/Simulator.cpp
+        modelAOS/Simulator.h
+        modelAOS/WindowManager.cpp
+        modelAOS/WindowManager.h
+        modelSOA/BoidsArray.h
+        modelSOA/Simulator.cpp
+        modelSOA/Simulator.h
+        modelSOA/WindowManager.cpp
+        modelSOA/WindowManager.h
 )
+
+target_link_libraries(BoidLib PUBLIC SFML::Graphics PUBLIC SFML::Window PUBLIC SFML::System)
+
+add_executable(Boids_DEMO demo.cpp)
+add_executable(Boids_Benchmark benchmark.cpp)
+
 
 # Add the SEQUENTIAL define only if USE_SEQUENTIAL is ON
 if(USE_PARALLEL)
     find_package(OpenMP REQUIRED)
-    target_link_libraries(Boids PRIVATE OpenMP::OpenMP_CXX SFML::Graphics)
+    target_link_libraries(BoidLib PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-target_link_libraries(Boids PRIVATE SFML::Graphics)
+target_link_libraries(Boids_DEMO PRIVATE BoidLib)
+target_link_libraries(Boids_Benchmark PRIVATE BoidLib)
