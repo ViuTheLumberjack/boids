@@ -21,7 +21,7 @@ namespace modelAOS {
     public:
         WindowManager();
 
-        void updateWindow(const std::array<Boid, BoidOptions::BoidNum> &flockState);
+        void updateWindow(const Boid* flockState, const int boidNum);
 
         sf::RenderWindow& getWindow();
     };

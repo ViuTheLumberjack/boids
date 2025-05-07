@@ -7,16 +7,16 @@
 
 namespace modelAOS {
     struct Boid {
-        double xPosition;
-        double yPosition;
-        double xVelocity;
-        double yVelocity;
+        float xPosition;
+        float yPosition;
+        float xVelocity;
+        float yVelocity;
 
         void move();
 
         Boid() = default;
 
-        Boid(const double x, const double y, const double velocityX, const double velocityY) : xPosition(x),
+        Boid(const float x, const float y, const float velocityX, const float velocityY) : xPosition(x),
             yPosition(y), xVelocity(velocityX), yVelocity(velocityY) {
         }
     };

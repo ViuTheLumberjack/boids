@@ -7,10 +7,9 @@
 #include <cmath>
 
 #include "../Options.h"
-#include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 
-namespace modelAOS {
+namespace modelSOA {
     WindowManager::WindowManager() {
         window = sf::RenderWindow(sf::VideoMode({ScreenOptions::WindowWidth, ScreenOptions::WindowHeight}), "Boids");
         const auto desktop = sf::VideoMode::getDesktopMode();
@@ -41,14 +40,14 @@ namespace modelAOS {
         window.draw(boxLines.data(), boxLines.size(), sf::PrimitiveType::LineStrip);
     }
 
-    void WindowManager::updateWindow(const std::array<Boid, BoidOptions::BoidNum> &flockState) {
+    void WindowManager::updateWindow(const BoidsArray &flockState, const int boidsNum) {
         initWindow();
 
-        for (const auto &boid: flockState) {
+        for (int i = 0; i < boidsNum; ++i) {
             sf::Sprite sprite(texture);
             sprite.setScale(sf::Vector2f(0.025, 0.025));
-            sprite.setPosition(sf::Vector2f(boid.xPosition, boid.yPosition));
-            sprite.setRotation(sf::radians(std::atan2(boid.yVelocity, boid.xVelocity) + M_PI));
+            sprite.setPosition(sf::Vector2f(flockState.xPosition[i], flockState.yPosition[i]));
+            sprite.setRotation(sf::radians(std::atan2(flockState.yVelocity[i], flockState.xVelocity[i]) + M_PI));
 
             window.draw(sprite);
         }

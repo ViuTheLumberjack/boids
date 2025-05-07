@@ -14,34 +14,46 @@ FetchContent_Declare(SFML
         GIT_SHALLOW ON
         EXCLUDE_FROM_ALL
         SYSTEM)
+FetchContent_Declare(matplotplusplus
+        GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
+        GIT_TAG origin/master)
 FetchContent_MakeAvailable(SFML)
+FetchContent_MakeAvailable(matplotplusplus)
 
 add_library(BoidLib
-        Options.h
-        modelAOS/Boid.cpp
-        modelAOS/Boid.h
-        modelAOS/Simulator.cpp
-        modelAOS/Simulator.h
-        modelAOS/WindowManager.cpp
-        modelAOS/WindowManager.h
-        modelSOA/BoidsArray.h
-        modelSOA/Simulator.cpp
-        modelSOA/Simulator.h
-        modelSOA/WindowManager.cpp
-        modelSOA/WindowManager.h
+        BoidLib/Options.h
+        BoidLib/modelAOS/Boid.cpp
+        BoidLib/modelAOS/Boid.h
+        BoidLib/modelAOS/Simulator.cpp
+        BoidLib/modelAOS/Simulator.h
+        BoidLib/modelAOS/WindowManager.cpp
+        BoidLib/modelAOS/WindowManager.h
+        BoidLib/modelSOA/BoidsArray.h
+        BoidLib/modelSOA/Simulator.cpp
+        BoidLib/modelSOA/Simulator.h
+        BoidLib/modelSOA/WindowManager.cpp
+        BoidLib/modelSOA/WindowManager.h
+        BoidLib/modelAOSOA/Boid.cpp
+        BoidLib/modelAOSOA/Boid.h
+        BoidLib/modelAOSOA/Simulator.cpp
+        BoidLib/modelAOSOA/Simulator.h
+        BoidLib/modelAOSOA/WindowManager.cpp
+        BoidLib/modelAOSOA/WindowManager.h
 )
 
-target_link_libraries(BoidLib PUBLIC SFML::Graphics PUBLIC SFML::Window PUBLIC SFML::System)
+target_link_libraries(BoidLib PUBLIC SFML::Graphics PUBLIC SFML::Window PUBLIC SFML::System PUBLIC matplot)
 
 add_executable(Boids_DEMO demo.cpp)
 add_executable(Boids_Benchmark benchmark.cpp)
-
+add_executable(Boids_plotter plotter.cpp)
 
 # Add the SEQUENTIAL define only if USE_SEQUENTIAL is ON
 if(USE_PARALLEL)
     find_package(OpenMP REQUIRED)
     target_link_libraries(BoidLib PUBLIC OpenMP::OpenMP_CXX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 target_link_libraries(Boids_DEMO PRIVATE BoidLib)
 target_link_libraries(Boids_Benchmark PRIVATE BoidLib)
+target_link_libraries(Boids_plotter PRIVATE matplot)

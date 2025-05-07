@@ -1,3 +1,5 @@
 /cmake-build-debug/
 /cmake-build-sequential/
 /cmake-build-parallel/
+/cmake-build-release-parallel/
+/cmake-build-release-sequential/

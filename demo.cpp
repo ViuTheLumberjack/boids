@@ -5,10 +5,12 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Graphics.hpp"
 
-#include "modelAOS/Simulator.h"
-#include "modelAOS/WindowManager.h"
-#include "modelSOA/Simulator.h"
-#include "modelSOA/WindowManager.h"
+#include "BoidLib/modelAOS/Simulator.h"
+#include "BoidLib/modelAOS/WindowManager.h"
+#include "BoidLib/modelSOA/Simulator.h"
+#include "BoidLib/modelSOA/WindowManager.h"
+#include "BoidLib/modelAOSOA/Simulator.h"
+#include "BoidLib/modelAOSOA/WindowManager.h"
 
 #ifdef _OPENMP
 #include <omp.h> // for OpenMP library functions
@@ -17,27 +19,39 @@
 using namespace modelSOA;
 
 int main() {
-    const auto s = std::make_unique<Simulator>();
+    BoidOptions options {};
+    options.BoidNum = 100;
+    options.MaxV = 2;
+    options.VisualRange = 100;
+
+    const auto s = std::make_unique<Simulator>(options);
     const auto w = std::make_unique<WindowManager>();
 
 #ifdef _OPENMP
+    std::cout << "Max Threads: " << omp_get_max_threads() << std::endl;
+    std::cout << "Num Threads: " << omp_get_num_threads() << std::endl;
+    std::cout << "Num processors (Phys+HT): " << omp_get_num_procs() << std::endl;
+    omp_set_num_threads(13);
+    std::cout << "Max Threads: " << omp_get_max_threads() << std::endl;
+    std::cout << "Num Threads: " << omp_get_num_threads() << std::endl;
     std::cout << "Num processors (Phys+HT): " << omp_get_num_procs() << std::endl;
 #endif
 
 
     while (w->getWindow().isOpen()) {
+#ifdef _OPENMP
+        s->NextStateParallel();
+#else
+        s->NextStateSequential();
+#endif
 
-        s->NextState();
-        {
-            // Update the window with the new state
-            w->updateWindow(s->getState());
+        // Update the window with the new state
+        w->updateWindow(s->getState(), options.BoidNum);
 
-            while (const std::optional event = w->getWindow().pollEvent())
-            {
-                // Close window: exit
-                if (event->is<sf::Event::Closed>())
-                    w->getWindow().close();
-            }
+        while (const std::optional event = w->getWindow().pollEvent()) {
+            // Close window: exit
+            if (event->is<sf::Event::Closed>())
+                w->getWindow().close();
         }
     }
 }

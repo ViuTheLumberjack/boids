@@ -20,7 +20,7 @@ namespace modelSOA {
     public:
         WindowManager();
 
-        void updateWindow(const BoidsArray& flockState);
+        void updateWindow(const BoidsArray& flockState, const int boidsNum);
 
         sf::RenderWindow& getWindow();
     };
