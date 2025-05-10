@@ -16,7 +16,7 @@
 
 
 static constexpr int EXPERIMENTS = 100;
-static constexpr int ITERATIONS = 1000;
+static constexpr int ITERATIONS = 10000;
 
 template<typename SimulatorType>
 std::vector<long> performParallelExperiment(const BoidOptions options) {
@@ -66,10 +66,10 @@ int main() {
     // std::vector<int> boids = {100, 250, 500, 1000, 2500, 5000, 10000};
     //std::vector<int> visualRange = {10, 25, 50, 100, 250, 500};
     //std::vector<int> maxV = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    std::vector<int> threads = {6, 12, 13};
-    std::vector<int> boids = {100};
-    std::vector<int> visualRange = {100};
-    std::vector<int> maxV = {10};
+    std::vector<int> threads = {12};
+    std::vector<int> boids = {1000};
+    std::vector<int> visualRange = {10};
+    std::vector<int> maxV = {100};
 
     std::filesystem::path resultFolder = std::filesystem::current_path();
     resultFolder /= "results";
@@ -81,17 +81,20 @@ int main() {
             options.BoidNum = boid;
             options.VisualRange = range;
 
+
             std::cout << "Running " << boid << " boids, "
                           << range << " visual range" << std::endl;
             // SEQUENTIAL EXPERIMENT
-            auto soaResultsSeq = performSequentialExperiment<modelSOA::Simulator>(options);
             auto aosResultsSeq = performSequentialExperiment<modelAOS::Simulator>(options);
-            std::cout << "SOA: " << static_cast<float>(std::accumulate(soaResultsSeq.begin(), soaResultsSeq.end(), 0l)) / EXPERIMENTS
-                       << " microseconds" << std::endl;
             std::cout << "AOS: " << static_cast<float>(std::accumulate(aosResultsSeq.begin(), aosResultsSeq.end(), 0l)) / EXPERIMENTS
                     << " microseconds" << std::endl;
-            writeResults(resultFolder / std::format("soa_seq_{}_{}.txt", boid, range), soaResultsSeq);
             writeResults(resultFolder / std::format("aos_seq_{}_{}.txt", boid, range), aosResultsSeq);
+
+            /*
+            auto soaResultsSeq = performSequentialExperiment<modelSOA::Simulator>(options);
+            std::cout << "SOA: " << static_cast<float>(std::accumulate(soaResultsSeq.begin(), soaResultsSeq.end(), 0l)) / EXPERIMENTS
+                       << " microseconds" << std::endl;
+            writeResults(resultFolder / std::format("soa_seq_{}_{}.txt", boid, range), soaResultsSeq);
 
             for (const int max : maxV) {
                 options.MaxV = max;
@@ -104,21 +107,22 @@ int main() {
 
                 writeResults(resultFolder / std::format("aosoa_seq_{}_{}_{}.txt", boid, range, max), aosoaResultsSeq);
             }
-
+            */
             // PARALLEL EXPERIMENT
             for (const int thread : threads) {
                 omp_set_num_threads(thread);
                 std::cout << "Running with " << thread << " threads" << std::endl;
 
-                auto soaResultsParallel = performParallelExperiment<modelSOA::Simulator>(options);
                 auto aosResultsParallel = performParallelExperiment<modelAOS::Simulator>(options);
-
-                std::cout << "SOA: " << static_cast<float>(std::accumulate(soaResultsParallel.begin(), soaResultsParallel.end(), 0l)) / EXPERIMENTS
-                        << " microseconds" << std::endl;
                 std::cout << "AOS: " << static_cast<float>(std::accumulate(aosResultsParallel.begin(), aosResultsParallel.end(), 0l)) / EXPERIMENTS
                         << " microseconds" << std::endl;
-                writeResults(resultFolder / std::format("soa_par_{}_{}_{}.txt", thread, boid, range), soaResultsParallel);
                 writeResults(resultFolder / std::format("aos_par_{}_{}_{}.txt", thread, boid, range), aosResultsParallel);
+
+                /*
+                auto soaResultsParallel = performParallelExperiment<modelSOA::Simulator>(options);
+                std::cout << "SOA: " << static_cast<float>(std::accumulate(soaResultsParallel.begin(), soaResultsParallel.end(), 0l)) / EXPERIMENTS
+                        << " microseconds" << std::endl;
+                writeResults(resultFolder / std::format("soa_par_{}_{}_{}.txt", thread, boid, range), soaResultsParallel);
 
                 for (const int max : maxV) {
                     options.MaxV = max;
@@ -129,6 +133,7 @@ int main() {
 
                     writeResults(resultFolder / std::format("aosoa_par_{}_{}_{}_{}.txt", thread, boid, range, max), aosoaResultsParallel);
                 }
+                */
             }
         }
     }

@@ -48,7 +48,7 @@ namespace modelAOS {
             auto boid = flockState[i];
 
             sf::Sprite sprite(texture);
-            sprite.setScale(sf::Vector2f(0.025, 0.025));
+            sprite.setScale(sf::Vector2f(0.0125, 0.0125));
             sprite.setPosition(sf::Vector2f(boid.xPosition, boid.yPosition));
             sprite.setRotation(sf::radians(std::atan2(boid.yVelocity, boid.xVelocity) + M_PI));
 

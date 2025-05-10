@@ -19,7 +19,7 @@ namespace modelAOS {
         float *velocitiesX, *velocitiesY;
 
     public:
-        Simulator(const BoidOptions options);
+        explicit Simulator(BoidOptions options);
 
         void RunSimulation(void(Simulator::*f)(), int iterations);
         void NextStateParallel();

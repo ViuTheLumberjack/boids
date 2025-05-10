@@ -11,6 +11,8 @@
 #include <omp.h>
 #include <random>
 
+#include "KDTree.h"
+
 using engine = std::mt19937;
 
 namespace modelAOS {
@@ -50,55 +52,52 @@ namespace modelAOS {
         // Copy the boids to a new array
         velocitiesX = new float[options.BoidNum];
         velocitiesY = new float[options.BoidNum];
-    // #pragma omp parallel default(none) shared(boids, options, velocitiesX, velocitiesY, f) firstprivate(iterations) if (f != &Simulator::NextStateSequential)
-        {
-            for (int i = 0; i < iterations; ++i) {
-                (this->*f)();
-            }
+
+        for (int i = 0; i < iterations; ++i) {
+            (this->*f)();
         }
     }
 
     void Simulator::NextStateParallel() {
         // Copy the boids to a new array
-        int active_levels = omp_get_active_level();
-#pragma omp parallel shared(boids, options, velocitiesX, velocitiesY) if (active_levels < 1)
-        {
-            int i;
+        auto kdTree = ModelAOS::KDTree(boids, options.BoidNum, options.VisualRange);
 
-#pragma omp for private(i) schedule(dynamic)
-            for (i = 0; i < options.BoidNum; ++i) {
-                float xpos_avg = 0, ypos_avg = 0, xvel_avg = 0, yvel_avg = 0, neighboring_boids = 0, close_dx = 0,
+#pragma omp parallel default(none) shared(boids, kdTree, options, velocitiesX, velocitiesY)
+        {
+            const int numThreads = omp_get_num_threads();
+
+            for (int i = omp_get_thread_num(); i < options.BoidNum; i += numThreads) {
+                const Boid* current = &boids[i];
+                float xpos_avg = 0, ypos_avg = 0, xvel_avg = 0, yvel_avg = 0, close_dx = 0, neighboring_boids = 0,
                         close_dy = 0;
 
-                float pos_x = boids[i].xPosition;
-                float pos_y = boids[i].yPosition;
-                float new_vx = boids[i].xVelocity;
-                float new_vy = boids[i].yVelocity;
+                const float pos_x = current->xPosition;
+                const float pos_y = current->yPosition;
+                float new_vx = current->xVelocity;
+                float new_vy = current->yVelocity;
 
+                //auto neighbors = kdTree.query(&boids[i]);
+
+                //for (const auto temp : neighbors) {
                 for (int j = 0; j < options.BoidNum; ++j) {
-                    if (j == i) continue;
+                    const auto temp = &boids[j];
+                    const float dx = temp->xPosition - pos_x;
+                    const float dy = temp->yPosition - pos_y;
 
-                    float dx = boids[j].xPosition - pos_x;
-                    float dy = boids[j].yPosition - pos_y;
-
-                    // We are inside the Visual Range so we can see each other
-                    if (std::abs(dx) < options.VisualRange && std::abs(dy) < options.VisualRange) {
-                        float squared_distance = dx * dx + dy * dy;
-
-                        if (squared_distance < options.ProtectedRange * options.ProtectedRange) {
-                            close_dx += pos_x - boids[j].xPosition;
-                            close_dy += pos_y - boids[j].yPosition;
-                        } else if (squared_distance <= options.VisualRange * options.VisualRange) {
-                            xpos_avg += boids[j].xPosition;
-                            ypos_avg += boids[j].yPosition;
-                            xvel_avg += boids[j].xVelocity;
-                            yvel_avg += boids[j].yVelocity;
-
-                            neighboring_boids += 1;
-                        }
+                    if (const float squared_distance = dx * dx + dy * dy; squared_distance < options.ProtectedRange * options.ProtectedRange) {
+                        close_dx += pos_x - temp->xPosition;
+                        close_dy += pos_y - temp->yPosition;
                     }
+
+                    xpos_avg += temp->xPosition;
+                    ypos_avg += temp->yPosition;
+                    xvel_avg += temp->xVelocity;
+                    yvel_avg += temp->yVelocity;
+
+                    neighboring_boids++;
                 }
-                // FLOCKING BEHAVIOUR
+
+                //if (!neighbors.empty()) {
                 if (neighboring_boids > 0) {
                     xpos_avg = xpos_avg / neighboring_boids;
                     ypos_avg = ypos_avg / neighboring_boids;
@@ -111,8 +110,9 @@ namespace modelAOS {
 
                     new_vy = new_vy +
                              (ypos_avg - pos_y) * options.CenteringFactor +
-                             (yvel_avg - boids[i].yVelocity) * options.MatchingFactor;
+                             (yvel_avg - new_vy) * options.MatchingFactor;
                 }
+
 
                 new_vx = new_vx + (close_dx * options.AvoidFactor);
                 new_vy = new_vy + (close_dy * options.AvoidFactor);
@@ -148,12 +148,12 @@ namespace modelAOS {
                     new_vy = new_vy / speed * options.MaxSpeed;
                 }
 
+
                 velocitiesX[i] = new_vx;
                 velocitiesY[i] = new_vy;
             }
-
-#pragma omp for private(i)
-            for (i = 0; i < options.BoidNum; ++i) {
+#pragma omp barrier
+            for (int i = omp_get_thread_num(); i < options.BoidNum; i += numThreads) {
                 boids[i].xVelocity = velocitiesX[i];
                 boids[i].yVelocity = velocitiesY[i];
                 boids[i].move();
@@ -163,6 +163,7 @@ namespace modelAOS {
 
     void Simulator::NextStateSequential() {
         int i;
+        const auto kdTree = ModelAOS::KDTree(boids, options.BoidNum, options.VisualRange);
         for (i = 0; i < options.BoidNum; ++i) {
             float xpos_avg = 0, ypos_avg = 0, xvel_avg = 0, yvel_avg = 0, neighboring_boids = 0, close_dx = 0,
                     close_dy = 0;
@@ -172,35 +173,27 @@ namespace modelAOS {
             float new_vx = boids[i].xVelocity;
             float new_vy = boids[i].yVelocity;
 
-            for (int j = 0; j < options.BoidNum; ++j) {
-                if (j == i) continue;
+            auto neighbors = kdTree.query(&boids[i]);
+            for (const auto neighbor : neighbors) {
+                const float dx = neighbor->xPosition - pos_x;
+                const float dy = neighbor->yPosition - pos_y;
 
-                float dx = boids[j].xPosition - pos_x;
-                float dy = boids[j].yPosition - pos_y;
-
-                // We are inside the Visual Range so we can see each other
-                if (std::abs(dx) < options.VisualRange && std::abs(dy) < options.VisualRange) {
-                    float squared_distance = dx * dx + dy * dy;
-
-                    if (squared_distance < options.ProtectedRange * options.ProtectedRange) {
-                        close_dx += pos_x - boids[j].xPosition;
-                        close_dy += pos_y - boids[j].yPosition;
-                    } else if (squared_distance <= options.VisualRange * options.VisualRange) {
-                        xpos_avg += boids[j].xPosition;
-                        ypos_avg += boids[j].yPosition;
-                        xvel_avg += boids[j].xVelocity;
-                        yvel_avg += boids[j].yVelocity;
-
-                        neighboring_boids += 1;
-                    }
+                if (const float squared_distance = dx * dx + dy * dy; squared_distance < options.ProtectedRange * options.ProtectedRange) {
+                    close_dx += pos_x - neighbor->xPosition;
+                    close_dy += pos_y - neighbor->yPosition;
                 }
+
+                xpos_avg += neighbor->xPosition;
+                ypos_avg += neighbor->yPosition;
+                xvel_avg += neighbor->xVelocity;
+                yvel_avg += neighbor->yVelocity;
             }
             // FLOCKING BEHAVIOUR
-            if (neighboring_boids > 0) {
-                xpos_avg = xpos_avg / neighboring_boids;
-                ypos_avg = ypos_avg / neighboring_boids;
-                xvel_avg = xvel_avg / neighboring_boids;
-                yvel_avg = yvel_avg / neighboring_boids;
+            if (!neighbors.empty()) {
+                xpos_avg = xpos_avg / neighbors.size();
+                ypos_avg = ypos_avg / neighbors.size();
+                xvel_avg = xvel_avg / neighbors.size();
+                yvel_avg = yvel_avg / neighbors.size();
 
                 new_vx = new_vx +
                          (xpos_avg - pos_x) * options.CenteringFactor +

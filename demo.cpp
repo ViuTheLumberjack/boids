@@ -16,13 +16,13 @@
 #include <omp.h> // for OpenMP library functions
 #endif
 
-using namespace modelSOA;
+using namespace modelAOS;
 
 int main() {
     BoidOptions options {};
-    options.BoidNum = 100;
+    options.BoidNum = 1000;
     options.MaxV = 2;
-    options.VisualRange = 100;
+    options.VisualRange = 50;
 
     const auto s = std::make_unique<Simulator>(options);
     const auto w = std::make_unique<WindowManager>();
@@ -32,9 +32,6 @@ int main() {
     std::cout << "Num Threads: " << omp_get_num_threads() << std::endl;
     std::cout << "Num processors (Phys+HT): " << omp_get_num_procs() << std::endl;
     omp_set_num_threads(13);
-    std::cout << "Max Threads: " << omp_get_max_threads() << std::endl;
-    std::cout << "Num Threads: " << omp_get_num_threads() << std::endl;
-    std::cout << "Num processors (Phys+HT): " << omp_get_num_procs() << std::endl;
 #endif
 
 

@@ -39,6 +39,8 @@ add_library(BoidLib
         BoidLib/modelAOSOA/Simulator.h
         BoidLib/modelAOSOA/WindowManager.cpp
         BoidLib/modelAOSOA/WindowManager.h
+        BoidLib/modelAOS/KDTree.h
+        BoidLib/modelAOS/KDTree.cpp
 )
 
 target_link_libraries(BoidLib PUBLIC SFML::Graphics PUBLIC SFML::Window PUBLIC SFML::System PUBLIC matplot)
