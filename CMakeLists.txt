@@ -49,12 +49,13 @@ add_executable(Boids_DEMO demo.cpp)
 add_executable(Boids_Benchmark benchmark.cpp)
 add_executable(Boids_plotter plotter.cpp)
 
-# Add the SEQUENTIAL define only if USE_SEQUENTIAL is ON
-if(USE_PARALLEL)
-    find_package(OpenMP REQUIRED)
-    target_link_libraries(BoidLib PUBLIC OpenMP::OpenMP_CXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
+find_package(OpenMP REQUIRED)
+target_link_libraries(BoidLib PUBLIC OpenMP::OpenMP_CXX)
+
+# If n debug mode add -fsanitize=thread
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O1")
+endif ()
 
 target_link_libraries(Boids_DEMO PRIVATE BoidLib)
 target_link_libraries(Boids_Benchmark PRIVATE BoidLib)

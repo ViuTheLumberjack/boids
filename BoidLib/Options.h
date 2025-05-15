@@ -5,7 +5,8 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-struct BoidOptions {
+struct BoidOptions
+{
     int BoidNum;
     int MaxV;
     float VisualRange;
@@ -19,15 +20,16 @@ struct BoidOptions {
     float MinSpeed = 40;
 };
 
-struct ScreenOptions {
+struct ScreenOptions
+{
     static int constexpr WindowWidth = 1800;
     static int constexpr WindowHeight = 900;
 
-    static int constexpr FrameRate = 30;
+    static int constexpr FrameRate = 60;
     static float constexpr LeftMargin = 300;
     static float constexpr RightMargin = 300;
     static float constexpr BottomMargin = 300;
     static float constexpr TopMargin = 300;
 };
 
-#endif //OPTIONS_H
+#endif // OPTIONS_H
