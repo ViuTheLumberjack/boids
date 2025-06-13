@@ -29,7 +29,7 @@ int main()
     const auto w = std::make_unique<WindowManager>();
 
 #ifdef _OPENMP
-    omp_set_num_threads(12);
+    omp_set_num_threads(16);
     std::cout << "Max Threads: " << omp_get_max_threads() << std::endl;
     std::cout << "Num Threads: " << omp_get_num_threads() << std::endl;
     std::cout << "Num processors (Phys+HT): " << omp_get_num_procs() << std::endl;
@@ -39,11 +39,8 @@ int main()
     while (w->getWindow().isOpen())
     {
         i++;
-#ifdef _OPENMP
-        s->NextStateParallel();
-#else
-        s->NextStateSequential();
-#endif
+
+        s->NextStateParallelKDNoBarrier();
 
         w->updateWindow(s->getState(), options.BoidNum);
 
