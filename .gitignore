@@ -1,1 +1,4 @@
 /cmake-build-*/
+
+result_processing/*
+!result_processing/plotter.py
