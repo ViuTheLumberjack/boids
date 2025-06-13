@@ -23,8 +23,14 @@ namespace modelAOS
         explicit Simulator(const BoidOptions &options);
 
         void RunSimulation(void (Simulator::*f)(), int iterations);
-        void NextStateParallel();
+
         void NextStateSequential();
+        void NextStateParallelBarrier();
+        void NextStateParallelNoBarrier();
+
+        void NextStateSequentialKD();
+        void NextStateParallelKDBarrier();
+        void NextStateParallelKDNoBarrier();
 
         [[nodiscard]] const Boid *getState() const;
 
